@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TicketHub</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f4f6fb; color: #182033; }
+    header { background: #4338ca; color: white; padding: 2rem max(1rem, calc((100% - 70rem)/2)); }
+    main { max-width: 70rem; margin: auto; padding: 1.5rem 1rem 3rem; }
+    #status { min-height: 1.5rem; font-weight: 600; }
+    .error { color: #b91c1c; } .success { color: #166534; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+    article, form { background: white; border-radius: .75rem; padding: 1rem; box-shadow: 0 2px 10px #0001; }
+    button { background: #4338ca; color: white; border: 0; border-radius: .4rem; padding: .65rem 1rem; cursor: pointer; }
+    button:focus, input:focus { outline: 3px solid #a5b4fc; outline-offset: 2px; }
+    dialog { border: 0; border-radius: .75rem; width: min(30rem, 90vw); }
+    label { display: block; margin: .75rem 0; }
+    input { width: 100%; box-sizing: border-box; padding: .55rem; }
+    .actions { display: flex; gap: .5rem; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TicketHub</h1>
+    <p>A teaching application for a three-tier AWS architecture.</p>
+  </header>
+  <main>
+    <p id="status" role="status" aria-live="polite">Loading events…</p>
+    <section id="events" class="grid" aria-label="Available events"></section>
+  </main>
+
+  <dialog id="bookingDialog" aria-labelledby="dialogTitle">
+    <form id="bookingForm">
+      <h2 id="dialogTitle">Create a test booking</h2>
+      <p>Use fictitious information only.</p>
+      <input id="eventId" type="hidden">
+      <label>Event <input id="eventName" readonly></label>
+      <label>Name <input id="customerName" maxlength="120" value="Example Student" required></label>
+      <label>Email <input id="customerEmail" type="email" maxlength="254" value="student@example.com" required></label>
+      <label>Quantity <input id="quantity" type="number" min="1" max="10" value="1" required></label>
+      <div class="actions">
+        <button type="button" id="cancelButton">Cancel</button>
+        <button type="submit">Book</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const statusNode = document.querySelector('#status');
+    const eventsNode = document.querySelector('#events');
+    const dialog = document.querySelector('#bookingDialog');
+    let events = [];
+
+    function setStatus(message, type = '') {
+      statusNode.textContent = message;
+      statusNode.className = type;
+    }
+
+    function renderEvents() {
+      eventsNode.replaceChildren();
+      for (const event of events) {
+        const card = document.createElement('article');
+        const title = document.createElement('h2');
+        const details = document.createElement('p');
+        const availability = document.createElement('p');
+        const button = document.createElement('button');
+        title.textContent = event.name;
+        details.textContent = `${new Date(event.event_date).toLocaleString()} — ${event.location} — $${event.price}`;
+        availability.textContent = `${event.available_tickets} tickets available`;
+        button.textContent = 'Create test booking';
+        button.addEventListener('click', () => openBooking(event));
+        card.append(title, details, availability, button);
+        eventsNode.append(card);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const response = await fetch('/api/events');
+        if (!response.ok) throw new Error('Request failed');
+        events = await response.json();
+        renderEvents();
+        setStatus(`${events.length} events loaded.`, 'success');
+      } catch (_error) {
+        setStatus('Events could not be loaded. Check the application health endpoint.', 'error');
+      }
+    }
+
+    function openBooking(event) {
+      document.querySelector('#eventId').value = event.id;
+      document.querySelector('#eventName').value = event.name;
+      dialog.showModal();
+    }
+
+    document.querySelector('#cancelButton').addEventListener('click', () => dialog.close());
+    document.querySelector('#bookingForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        event_id: Number(document.querySelector('#eventId').value),
+        customer_name: document.querySelector('#customerName').value,
+        customer_email: document.querySelector('#customerEmail').value,
+        quantity: Number(document.querySelector('#quantity').value)
+      };
+      try {
+        const response = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Booking failed');
+        dialog.close();
+        setStatus(`Test booking ${result.booking_id} created.`, 'success');
+        await loadEvents();
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    });
+
+    loadEvents();
+  </script>
+</body>
+</html>
