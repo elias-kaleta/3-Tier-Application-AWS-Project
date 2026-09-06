@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TicketHub - Event Booking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .event-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+        }
+
+        .event-details {
+            padding: 20px;
+        }
+
+        .event-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .event-date {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .event-location {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .event-price {
+            font-size: 1.5em;
+            color: #764ba2;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .available-tickets {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .book-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: opacity 0.3s;
+        }
+
+        .book-btn:hover {
+            opacity: 0.9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎫 TicketHub</h1>
+            <p class="subtitle">Book tickets for amazing events</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search events by name or location...">
+        </div>
+
+        <div id="loadingMessage" class="loading">Loading events...</div>
+        <div id="errorMessage" class="error" style="display:none;"></div>
+        <div id="successMessage" class="success" style="display:none;"></div>
+        
+        <div id="eventsGrid" class="events-grid"></div>
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="modal">
+            <div class="modal-content">
+                <h2 class="modal-header">Book Tickets</h2>
+                <div id="modalError" class="error" style="display:none;"></div>
+                
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label>Event</label>
+                        <input type="text" id="modalEventName" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Name *</label>
+                        <input type="text" id="customerName" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="customerEmail" required placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Number of Tickets *</label>
+                        <input type="number" id="ticketQuantity" min="1" max="10" value="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total Price</label>
+                        <input type="text" id="totalPrice" readonly>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 TicketHub - AWS 3-Tier Application Demo</p>
+        <p>Built for Cloud Architecture Internship</p>
+    </footer>
+
+    <script>
+        let events = [];
+        let selectedEvent = null;
+        const API_BASE = window.location.origin;
+
+        // Load events on page load
+        window.addEventListener('DOMContentLoaded', loadEvents);
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', filterEvents);
+
+        // Ticket quantity change
+        document.getElementById('ticketQuantity').addEventListener('input', updateTotalPrice);
+
+        async function loadEvents() {
+            try {
+                const response = await fetch(`${API_BASE}/api/events`);
+                if (!response.ok) throw new Error('Failed to load events');
+                
+                events = await response.json();
+                displayEvents(events);
+                
+                document.getElementById('loadingMessage').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loadingMessage').style.display = 'none';
+                showError('Failed to load events. Please refresh the page.');
+                console.error('Error loading events:', error);
+            }
+        }
+
+        function displayEvents(eventsToShow) {
+            const grid = document.getElementById('eventsGrid');
+            
+            if (eventsToShow.length === 0) {
+                grid.innerHTML = '<p style="color: white; text-align: center; grid-column: 1/-1;">No events found.</p>';
+                return;
+            }
+
+            grid.innerHTML = eventsToShow.map(event => `
+                <div class="event-card" onclick="openBookingModal(${event.id})">
+                    <div class="event-image">${getEventIcon(event.category)}</div>
+                    <div class="event-details">
+                        <h3 class="event-title">${event.name}</h3>
+                        <p class="event-date">📅 ${formatDate(event.event_date)}</p>
+                        <p class="event-location">📍 ${event.location}</p>
+                        <p class="event-price">$${event.price}</p>
+                        <span class="available-tickets">${event.available_tickets} tickets left</span>
+                        <button class="book-btn" onclick="event.stopPropagation(); openBookingModal(${event.id})">
+                            Book Now
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getEventIcon(category) {
+            const icons = {
+                'concert': '🎵',
+                'sports': '⚽',
+                'theater': '🎭',
+                'comedy': '😂',
+                'conference': '💼'
+            };
+            return icons[category.toLowerCase()] || '🎉';
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = events.filter(event => 
+                event.name.toLowerCase().includes(searchTerm) ||
+                event.location.toLowerCase().includes(searchTerm) ||
+                event.category.toLowerCase().includes(searchTerm)
+            );
+            displayEvents(filtered);
+        }
+
+        function openBookingModal(eventId) {
+            selectedEvent = events.find(e => e.id === eventId);
+            if (!selectedEvent) return;
+
+            document.getElementById('modalEventName').value = selectedEvent.name;
+            document.getElementById('ticketQuantity').max = selectedEvent.available_tickets;
+            document.getElementById('ticketQuantity').value = 1;
+            updateTotalPrice();
+            
+            document.getElementById('bookingModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            document.getElementById('bookingForm').reset();
+            document.getElementById('modalError').style.display = 'none';
+        }
+
+        function updateTotalPrice() {
+            if (!selectedEvent) return;
+            const quantity = parseInt(document.getElementById('ticketQuantity').value) || 1;
+            const total = selectedEvent.price * quantity;
+            document.getElementById('totalPrice').value = `$${total.toFixed(2)}`;
+        }
+
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const booking = {
+                event_id: selectedEvent.id,
+                customer_name: document.getElementById('customerName').value,
+                customer_email: document.getElementById('customerEmail').value,
+                quantity: parseInt(document.getElementById('ticketQuantity').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/bookings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(booking)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Booking failed');
+                }
+
+                closeModal();
+                showSuccess(`Booking confirmed! Confirmation sent to ${booking.customer_email}`);
+                loadEvents(); // Refresh to update available tickets
+            } catch (error) {
+                showModalError(error.message);
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+
+        function showModalError(message) {
+            const errorDiv = document.getElementById('modalError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 5000);
+        }
+
+        // Close modal on background click
+        document.getElementById('bookingModal').addEventListener('click', (e) => {
+            if (e.target.id === 'bookingModal') closeModal();
+        });
+
+        // Health check endpoint test
+        fetch(`${API_BASE}/health`)
+            .then(res => res.json())
+            .then(data => console.log('Backend health:', data))
+            .catch(err => console.error('Backend health check failed:', err));
+    </script>
+</body>
+</html>
