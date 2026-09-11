@@ -269,7 +269,7 @@ RDS MySQL (Isolated Subnets)
 ├── AWS-Internship-Curriculum.md          # Complete 4-week curriculum with links
 ├── Vibe-Coding-Lab.md                    # Week 1 hands-on AI coding lab
 ├── AWS-Service-Deep-Dive-Presentation-Instructions.md  # Week 3 presentation guide
-├── Week 4 Schedule.md                    # Detailed capstone project timeline
+├── Internship Course Links.csv           # Quick reference links spreadsheet
 │
 ├── 3-tier-console-guide (BEGINNER)/      # Step-by-step console deployment
 │   ├── README.md                         # Project overview
@@ -309,7 +309,6 @@ RDS MySQL (Isolated Subnets)
 ### Week 4: Capstone Project
 - 📖 3-tier-console-guide (BEGINNER)/ - Follow step-by-step
 - 📖 AWS-Service-Deep-Dive-Presentation-Instructions.md
-- 📖 Week 4 Schedule.md
 
 ---
 
